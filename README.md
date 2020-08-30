@@ -6,6 +6,41 @@ Its modular architecture makes it easy to build powerful pipelines that fit spec
 
 ## Example pipelines
 
+### Simple
+
+A simple pipeline that takes requests from HAProxy and sends them to a test server.
+
+![simple](https://github.com/ShimmerGlass/http-mirror-pipeline/raw/master/docs/simple.png)
+
+`config.json` :
+
+```json
+[
+  {
+    "type": "source.haproxy_spoe",
+    "config": {
+      "listen_addr": "127.0.0.1:9999"
+    }
+  },
+  {
+    "type": "sink.http",
+    "config": {
+      "timeout": "1s",
+      "target_url": "http://127.0.0.1:8002"
+    }
+  }
+]
+```
+
+### With Kafka
+
+A more complex use case. In this example we use two pipelines:
+
+- The first one takes requests from HAProxy and sends them to a Kafka queue
+- The second one reads the message from Kafka, and both writes them to disk for storage and sends them to a test server
+
+![kafka](https://github.com/ShimmerGlass/http-mirror-pipeline/raw/master/docs/kafka.png)
+
 ## Modules
 
 ### Source
