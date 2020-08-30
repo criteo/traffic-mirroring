@@ -1,0 +1,41 @@
+syntax = "proto3";
+package mirror;
+
+import "google/protobuf/timestamp.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+enum Method {
+  GET = 0;
+  HEAD = 1;
+  POST = 2;
+  PUT = 3;
+  PATCH = 4;
+  DELETE = 5;
+  CONNECT = 6;
+  OPTIONS = 7;
+  TRACE = 8;
+}
+
+enum HTTPVersion {
+  V1_0 = 0;
+  V1_1 = 1;
+  V2 = 2;
+}
+
+message Request {
+  google.protobuf.Timestamp Time = 1 [
+    (gogoproto.jsontag) = "time",
+    (gogoproto.stdtime) = true,
+    (gogoproto.nullable) = false
+  ];
+  Method Method = 2 [ (gogoproto.jsontag) = "method" ];
+  string Path = 3 [ (gogoproto.jsontag) = "path" ];
+  HTTPVersion HTTPVersion = 4 [ (gogoproto.jsontag) = "http_version" ];
+  map<string, HeaderValues> Headers = 5
+      [ (gogoproto.jsontag) = "headers", (gogoproto.nullable) = false ];
+  bytes Body = 6 [ (gogoproto.jsontag) = "body" ];
+}
+
+message HeaderValues {
+  repeated string Values = 2 [ (gogoproto.jsontag) = "values" ];
+}
