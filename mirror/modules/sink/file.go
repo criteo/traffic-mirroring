@@ -23,8 +23,9 @@ func init() {
 }
 
 type FileConfig struct {
-	Path   string `json:"path,omitempty"`
-	Format string `json:"format,omitempty"`
+	Path       string `json:"path,omitempty"`
+	Format     string `json:"format,omitempty"`
+	BufferSize int    `json:"buffer_size,omitempty"`
 }
 
 type File struct {
@@ -52,7 +53,11 @@ func NewFile(cfg []byte) (mirror.Module, error) {
 		return nil, err
 	}
 
-	w := bufio.NewWriter(f)
+	if c.BufferSize == 0 {
+		c.BufferSize = 1024
+	}
+
+	w := bufio.NewWriterSize(f, c.BufferSize)
 
 	mod := &File{
 		out: make(chan mirror.Request),

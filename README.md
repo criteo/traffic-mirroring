@@ -119,10 +119,11 @@ Example:
 }
 ```
 
-| Param    | Value                                     |
-| -------- | ----------------------------------------- |
-| `path`   | Path of the file                          |
-| `format` | How to encode requests. `json` or `proto` |
+| Param         | Value                                                |
+| ------------- | ---------------------------------------------------- |
+| `path`        | Path of the file                                     |
+| `format`      | How to encode requests. `json` or `proto`            |
+| `buffer_size` | Buffer n bytes before writing to file. Default: 1024 |
 
 ### Control
 
