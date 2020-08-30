@@ -48,6 +48,7 @@ A more complex use case. In this example we use two pipelines:
 #### source.haproxy_spoe
 
 Uses HAProxy SPOE to receive request data. See test/haproxy for an example HAProxy configuration.
+
 Example:
 
 ```json
@@ -62,6 +63,22 @@ Example:
 | Param         | Value                                    |
 | ------------- | ---------------------------------------- |
 | `listen_addr` | Can be `<ip>:<port>` or `@<socket_file>` |
+
+#### source.pcap
+
+Capture and decodes http request from a network interface. Requires root privileges.
+
+Example:
+
+```json
+{
+  "type": "source.pcap",
+  "config": {
+    "interface": "lo",
+    "port": "80"
+  }
+}
+```
 
 ### Sinks
 
