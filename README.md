@@ -102,6 +102,7 @@ Example:
 | ------------ | ----------------------------------------------------------- |
 | `target_url` | URL to send the requests to. The path in the URL is ignored |
 | `timeout`    | Requests timeout. Ex: `1s`, `200ms`, `1m30s`                |
+| `parallel`   | How many requests to send in parallel. Default: 1           |
 
 #### sink.file
 

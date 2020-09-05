@@ -10,7 +10,10 @@ import (
 )
 
 func BenchmarkHTTP(b *testing.B) {
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {}))
+	res := make([]byte, 1024)
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Write(res)
+	}))
 
 	mod, err := NewHTTP([]byte(`{
 		"target_url": "` + server.URL + `",

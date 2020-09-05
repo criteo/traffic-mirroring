@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	HTTPName = "sink.http"
+	HTTPName      = "sink.http"
+	workerTimeout = 2 * time.Second
 )
 
 func init() {
@@ -26,12 +27,17 @@ func init() {
 type HTTPConfig struct {
 	TargetURL string `json:"target_url,omitempty"`
 	Timeout   string `json:"timeout,omitempty"`
+	Parallel  int    `json:"parallel"`
 }
 
 type HTTP struct {
 	out    chan mirror.Request
+	tasks  chan mirror.Request
 	client *http.Client
 	target *url.URL
+
+	numWorkers int
+	maxWorkers int
 }
 
 func NewHTTP(cfg []byte) (mirror.Module, error) {
@@ -52,12 +58,19 @@ func NewHTTP(cfg []byte) (mirror.Module, error) {
 		return nil, err
 	}
 
+	maxWorkers := 1
+	if c.Parallel > 0 {
+		maxWorkers = c.Parallel
+	}
+
 	mod := &HTTP{
-		out: make(chan mirror.Request),
+		out:   make(chan mirror.Request),
+		tasks: make(chan mirror.Request),
 		client: &http.Client{
 			Timeout: timeout,
 		},
-		target: url,
+		target:     url,
+		maxWorkers: maxWorkers,
 	}
 	return mod, nil
 }
@@ -69,7 +82,16 @@ func (m *HTTP) Output() <-chan mirror.Request {
 func (m *HTTP) SetInput(c <-chan mirror.Request) {
 	go func() {
 		for r := range c {
-			m.sendRequest(r)
+			if m.numWorkers >= m.maxWorkers {
+				m.tasks <- r
+			} else {
+				select {
+				case m.tasks <- r:
+				default:
+					go m.runWorker(r)
+					m.numWorkers++
+				}
+			}
 		}
 		close(m.out)
 	}()
@@ -99,4 +121,19 @@ func (m *HTTP) sendRequest(req mirror.Request) {
 
 	io.Copy(ioutil.Discard, res.Body)
 	res.Body.Close()
+}
+
+func (m *HTTP) runWorker(req mirror.Request) {
+	m.sendRequest(req)
+	timeout := time.NewTimer(workerTimeout)
+
+	for {
+		select {
+		case req := <-m.tasks:
+			m.sendRequest(req)
+			timeout.Reset(workerTimeout)
+		case <-timeout.C:
+			break
+		}
+	}
 }
