@@ -13,9 +13,15 @@ import (
 
 func main() {
 	cfgPath := flag.String("c", "config.json", "Config file path")
+	logLevel := flag.String("log-level", "info", "Log level")
 	flag.Parse()
 
-	log.SetLevel(log.DebugLevel)
+	l, err := log.ParseLevel(*logLevel)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.SetLevel(l)
 
 	f, err := os.Open(*cfgPath)
 	if err != nil {
