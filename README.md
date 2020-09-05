@@ -149,3 +149,35 @@ Example:
   ]
 }
 ```
+
+#### control.decouple
+
+http-mirror-pipeline is blocking, meaning a slow sink will slow down upstream modules. While this is useful when reading from a database for example there are situations where it is preferable to drop requests instead if the output is struggling. In the following example we decouple the sink from the source to avoid slowing down haproxy.
+
+Full config example :
+
+```json
+[
+  {
+    "type": "source.haproxy_spoe",
+    "config": {
+      "listen_addr": "127.0.0.1:9999"
+    }
+  },
+  {
+    "type": "control.decouple",
+    "config": {}
+  },
+  {
+    "type": "sink.http",
+    "config": {
+      "timeout": "1s",
+      "target_url": "http://127.0.0.1:8002"
+    }
+  }
+]
+```
+
+| Param   | Value                                                 |
+| ------- | ----------------------------------------------------- |
+| `quiet` | Do not log dropped messages summary. Default: `false` |
