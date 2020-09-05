@@ -117,6 +117,7 @@ func (m *HTTP) sendRequest(req mirror.Request) {
 	res, err := m.client.Do(hreq)
 	if err != nil {
 		log.Errorf("%s: %q: %s", HTTPName, m.target.Host, err)
+		return
 	}
 
 	io.Copy(ioutil.Discard, res.Body)
