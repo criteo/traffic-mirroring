@@ -58,6 +58,7 @@ func (m *Decouple) SetInput(c <-chan mirror.Request) {
 				atomic.AddUint32(&dropped, 1)
 			}
 		}
+		close(m.out)
 	}()
 
 	if !m.quiet {
