@@ -21,15 +21,11 @@ type SeqConfigEl struct {
 }
 
 type Seq struct {
-	out     chan mirror.Request
+	out     <-chan mirror.Request
 	modules []mirror.Module
 }
 
 func NewSeq(cfg []byte) (mirror.Module, error) {
-	mod := &Seq{
-		out: make(chan mirror.Request),
-	}
-
 	c := []SeqConfigEl{}
 	err := json.Unmarshal(cfg, &c)
 	if err != nil {
@@ -50,7 +46,7 @@ func NewSeq(cfg []byte) (mirror.Module, error) {
 		lastOut = sub.Output()
 	}
 
-	return mod, nil
+	return &Seq{out: lastOut}, nil
 }
 
 func (m *Seq) Output() <-chan mirror.Request {
