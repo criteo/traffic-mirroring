@@ -134,6 +134,7 @@ func (m *HTTP) runWorker(req mirror.Request) {
 			m.sendRequest(req)
 			timeout.Reset(workerTimeout)
 		case <-timeout.C:
+			m.numWorkers--
 			break
 		}
 	}
