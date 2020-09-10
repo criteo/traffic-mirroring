@@ -16,7 +16,7 @@ func TestFileJSON(t *testing.T) {
 	require.NoError(t, err)
 	defer os.Remove(f.Name())
 
-	mod, err := NewFile([]byte(`{"path": "` + f.Name() + `", "format": "json"}`))
+	mod, err := NewFile(mirror.ModuleContext{}, []byte(`{"path": "`+f.Name()+`", "format": "json"}`))
 	require.NoError(t, err)
 
 	reqs := []mirror.Request{

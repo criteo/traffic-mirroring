@@ -8,16 +8,33 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/common/log"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
+	"github.com/shimmerglass/http-mirror-pipeline/mirror/modules"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
 )
 
 const (
 	HTTPName      = "sink.http"
 	workerTimeout = 2 * time.Second
+)
+
+var (
+	httpResponseTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "http_response_total",
+		Help: "The total number of responses by status code",
+	}, []string{"module", "status_code"})
+
+	httpResponseTime = promauto.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "http_response_time_seconds",
+		Help:    "Http response time",
+		Buckets: prometheus.ExponentialBuckets(0.001, 4, 5),
+	}, []string{"module"})
 )
 
 func init() {
@@ -31,6 +48,7 @@ type HTTPConfig struct {
 }
 
 type HTTP struct {
+	ctx    mirror.ModuleContext
 	out    chan mirror.Request
 	tasks  chan mirror.Request
 	client *http.Client
@@ -40,7 +58,7 @@ type HTTP struct {
 	maxWorkers int
 }
 
-func NewHTTP(cfg []byte) (mirror.Module, error) {
+func NewHTTP(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	c := HTTPConfig{}
 
 	err := json.Unmarshal(cfg, &c)
@@ -64,6 +82,7 @@ func NewHTTP(cfg []byte) (mirror.Module, error) {
 	}
 
 	mod := &HTTP{
+		ctx:   ctx,
 		out:   make(chan mirror.Request),
 		tasks: make(chan mirror.Request),
 		client: &http.Client{
@@ -98,6 +117,8 @@ func (m *HTTP) SetInput(c <-chan mirror.Request) {
 }
 
 func (m *HTTP) sendRequest(req mirror.Request) {
+	modules.RequestsTotal.WithLabelValues(m.ctx.Name).Inc()
+
 	headers := http.Header{}
 	for name, vals := range req.Headers {
 		headers[name] = vals.Values
@@ -114,11 +135,15 @@ func (m *HTTP) sendRequest(req mirror.Request) {
 		Body:   ioutil.NopCloser(bytes.NewBuffer(req.Body)),
 	}
 
+	start := time.Now()
 	res, err := m.client.Do(hreq)
 	if err != nil {
 		log.Errorf("%s: %q: %s", HTTPName, m.target.Host, err)
 		return
 	}
+
+	httpResponseTime.WithLabelValues(m.ctx.Name).Observe(time.Since(start).Seconds())
+	httpResponseTotal.WithLabelValues(m.ctx.Name, strconv.Itoa(res.StatusCode)).Inc()
 
 	io.Copy(ioutil.Discard, res.Body)
 	res.Body.Close()

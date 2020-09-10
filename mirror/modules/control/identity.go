@@ -2,6 +2,7 @@ package control
 
 import (
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
+	"github.com/shimmerglass/http-mirror-pipeline/mirror/modules"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
 )
 
@@ -14,11 +15,12 @@ func init() {
 }
 
 type Identity struct {
+	ctx     mirror.ModuleContext
 	out     chan mirror.Request
 	modules []mirror.Module
 }
 
-func NewIdentity(cfg []byte) (mirror.Module, error) {
+func NewIdentity(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	return &Identity{
 		out: make(chan mirror.Request),
 	}, nil
@@ -31,6 +33,7 @@ func (m *Identity) Output() <-chan mirror.Request {
 func (m *Identity) SetInput(c <-chan mirror.Request) {
 	go func() {
 		for r := range c {
+			modules.RequestsTotal.WithLabelValues(m.ctx.Name).Inc()
 			m.out <- r
 		}
 		close(m.out)

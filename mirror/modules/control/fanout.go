@@ -1,10 +1,10 @@
 package control
 
 import (
-	"encoding/json"
 	"sync/atomic"
 
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
+	"github.com/shimmerglass/http-mirror-pipeline/mirror/config"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
 )
 
@@ -16,11 +16,6 @@ func init() {
 	registry.Register(FanoutName, NewFanout)
 }
 
-type FanoutConfigEl struct {
-	Type   string `json:"type"`
-	Config json.RawMessage
-}
-
 type Fanout struct {
 	out     chan mirror.Request
 	modules []mirror.Module
@@ -29,23 +24,17 @@ type Fanout struct {
 	outClosed uint32
 }
 
-func NewFanout(cfg []byte) (mirror.Module, error) {
+func NewFanout(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	mod := &Fanout{
 		out: make(chan mirror.Request),
 	}
 
-	c := []FanoutConfigEl{}
-	err := json.Unmarshal(cfg, &c)
+	mods, err := config.CreateModules(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, m := range c {
-		sub, err := registry.Create(m.Type, []byte(m.Config))
-		if err != nil {
-			return nil, err
-		}
-
+	for _, sub := range mods {
 		in := make(chan mirror.Request)
 		mod.in = append(mod.in, in)
 		sub.SetInput(in)

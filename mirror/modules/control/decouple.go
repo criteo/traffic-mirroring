@@ -5,7 +5,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
+	"github.com/shimmerglass/http-mirror-pipeline/mirror/modules"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
 	log "github.com/sirupsen/logrus"
 )
@@ -13,6 +16,13 @@ import (
 const (
 	DecoupleName       = "control.decouple"
 	logDroppedInterval = 10 * time.Second
+)
+
+var (
+	droppedTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "decouple_dropped_total",
+		Help: "The total number of responses dropped",
+	}, []string{"module"})
 )
 
 func init() {
@@ -24,11 +34,12 @@ type DecoupleConfig struct {
 }
 
 type Decouple struct {
+	ctx   mirror.ModuleContext
 	out   chan mirror.Request
 	quiet bool
 }
 
-func NewDecouple(cfg []byte) (mirror.Module, error) {
+func NewDecouple(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	c := DecoupleConfig{}
 	err := json.Unmarshal(cfg, &c)
 	if err != nil {
@@ -36,6 +47,7 @@ func NewDecouple(cfg []byte) (mirror.Module, error) {
 	}
 
 	mod := &Decouple{
+		ctx:   ctx,
 		out:   make(chan mirror.Request),
 		quiet: c.Quiet,
 	}
@@ -52,9 +64,11 @@ func (m *Decouple) SetInput(c <-chan mirror.Request) {
 
 	go func() {
 		for r := range c {
+			modules.RequestsTotal.WithLabelValues(m.ctx.Name).Inc()
 			select {
 			case m.out <- r:
 			default:
+				droppedTotal.WithLabelValues(m.ctx.Name).Inc()
 				atomic.AddUint32(&dropped, 1)
 			}
 		}

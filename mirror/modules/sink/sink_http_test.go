@@ -17,7 +17,7 @@ func TestHTTP(t *testing.T) {
 		assert.Equal(t, r.Header["X-Other-Header"], []string{"value3"})
 	}))
 
-	mod, err := NewHTTP([]byte(`{"target_url": "` + server.URL + `", "timeout": "10s"}`))
+	mod, err := NewHTTP(mirror.ModuleContext{}, []byte(`{"target_url": "`+server.URL+`", "timeout": "10s"}`))
 	require.NoError(t, err)
 
 	in := make(chan mirror.Request, 1)

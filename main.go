@@ -8,6 +8,7 @@ import (
 	_ "github.com/shimmerglass/http-mirror-pipeline/mirror/modules/control"
 	_ "github.com/shimmerglass/http-mirror-pipeline/mirror/modules/sink"
 	_ "github.com/shimmerglass/http-mirror-pipeline/mirror/modules/source"
+	"github.com/shimmerglass/http-mirror-pipeline/mirror/server"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -28,11 +29,21 @@ func main() {
 		log.Fatalf("cannot open config file: %s", err)
 	}
 
-	module, err := config.Create(f)
+	cfg, err := config.Create(f)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for range module.Output() {
+	if cfg.ListenAddr != "" {
+		srv := server.New(cfg.ListenAddr)
+		go func() {
+			err := srv.Run()
+			if err != nil {
+				log.Error(err)
+			}
+		}()
+	}
+
+	for range cfg.Pipeline.Output() {
 	}
 }

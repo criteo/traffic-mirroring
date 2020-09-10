@@ -8,7 +8,7 @@ import (
 )
 
 func TestFanout(t *testing.T) {
-	mod, err := NewFanout([]byte(`[
+	mod, err := NewFanout(mirror.ModuleContext{}, []byte(`[
 		{"type": "control.identity", "config": {}},
 		{"type": "control.identity", "config": {}}
 	]`))

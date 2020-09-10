@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
+	"github.com/shimmerglass/http-mirror-pipeline/mirror/modules"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
 )
 
@@ -21,11 +22,12 @@ type RateLimitConfig struct {
 }
 
 type RateLimit struct {
+	ctx      mirror.ModuleContext
 	out      chan mirror.Request
 	interval time.Duration
 }
 
-func NewRateLimit(cfg []byte) (mirror.Module, error) {
+func NewRateLimit(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	c := RateLimitConfig{}
 	err := json.Unmarshal(cfg, &c)
 	if err != nil {
@@ -33,6 +35,7 @@ func NewRateLimit(cfg []byte) (mirror.Module, error) {
 	}
 
 	mod := &RateLimit{
+		ctx:      ctx,
 		out:      make(chan mirror.Request),
 		interval: time.Duration((1 / float64(c.RPS)) * float64(time.Second)),
 	}
@@ -52,6 +55,7 @@ func (m *RateLimit) SetInput(c <-chan mirror.Request) {
 			time.Sleep(m.interval - now.Sub(last))
 			last = now
 
+			modules.RequestsTotal.WithLabelValues(m.ctx.Name).Inc()
 			m.out <- r
 		}
 		close(m.out)

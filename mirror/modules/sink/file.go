@@ -9,7 +9,10 @@ import (
 	"os"
 
 	"github.com/gogo/protobuf/proto"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
+	"github.com/shimmerglass/http-mirror-pipeline/mirror/modules"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
 	log "github.com/sirupsen/logrus"
 )
@@ -18,8 +21,26 @@ const (
 	FileName = "sink.file"
 )
 
+var (
+	writtenTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "file_written_bytes_total",
+		Help: "The total number of bytes written by the module",
+	}, []string{"module"})
+)
+
 func init() {
 	registry.Register(FileName, NewFile)
+}
+
+type metricsWriter struct {
+	name  string
+	inner io.Writer
+}
+
+func (m metricsWriter) Write(b []byte) (int, error) {
+	n, err := m.inner.Write(b)
+	writtenTotal.WithLabelValues(m.name).Add(float64(n))
+	return n, err
 }
 
 type FileConfig struct {
@@ -29,6 +50,7 @@ type FileConfig struct {
 }
 
 type File struct {
+	ctx mirror.ModuleContext
 	f   *bufio.Writer
 	fmt string
 	out chan mirror.Request
@@ -40,9 +62,8 @@ type File struct {
 	jsonEnc      *json.Encoder
 }
 
-func NewFile(cfg []byte) (mirror.Module, error) {
+func NewFile(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	c := FileConfig{}
-
 	err := json.Unmarshal(cfg, &c)
 	if err != nil {
 		return nil, err
@@ -57,9 +78,13 @@ func NewFile(cfg []byte) (mirror.Module, error) {
 		c.BufferSize = 1024
 	}
 
-	w := bufio.NewWriterSize(f, c.BufferSize)
+	w := bufio.NewWriterSize(metricsWriter{
+		name:  ctx.Name,
+		inner: f,
+	}, c.BufferSize)
 
 	mod := &File{
+		ctx: ctx,
 		out: make(chan mirror.Request),
 		fmt: c.Format,
 
@@ -88,6 +113,7 @@ func (m *File) Output() <-chan mirror.Request {
 func (m *File) SetInput(c <-chan mirror.Request) {
 	go func() {
 		for r := range c {
+			modules.RequestsTotal.WithLabelValues(m.ctx.Name).Inc()
 			err := m.encoder(m.f, r)
 			if err != nil {
 				log.Errorf("%s: %s", FileName, err)
