@@ -10,8 +10,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sync"
-	"time"
 
+	"github.com/golang/protobuf/ptypes"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
@@ -156,15 +156,15 @@ func (m *PCap) readRequest(reader *bufio.Reader) (mirror.Request, error) {
 	body, _ := ioutil.ReadAll(req.Body)
 
 	mreq := mirror.Request{
-		Time:    time.Now(),
+		Time:    ptypes.TimestampNow(),
 		Method:  mirror.Method(mirror.Method_value[req.Method]),
 		Path:    req.URL.Path,
 		Body:    body,
-		Headers: map[string]mirror.HeaderValues{},
+		Headers: map[string]*mirror.HeaderValue{},
 	}
 
 	for name, values := range req.Header {
-		mreq.Headers[name] = mirror.HeaderValues{Values: values}
+		mreq.Headers[name] = &mirror.HeaderValue{Values: values}
 	}
 
 	return mreq, nil

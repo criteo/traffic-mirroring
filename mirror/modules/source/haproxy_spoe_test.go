@@ -38,10 +38,10 @@ var spoeTestCases = []spoeTestCase{
 			"\x63\x63\x65\x70\x74\x03\x2a\x2f\x2a\x08\x58\x2d\x48\x65\x61\x64" +
 			"\x65\x72\x05\x76\x61\x6c\x75\x65\x00\x00\x04\x62\x6f\x64\x79\x09\x00"),
 		expected: mirror.Request{
-			Method:      mirror.GET,
+			Method:      mirror.Method_GET,
 			Path:        "/the/path",
-			HTTPVersion: mirror.V1_1,
-			Headers: map[string]mirror.HeaderValues{
+			HttpVersion: mirror.HTTPVersion_HTTP1_1,
+			Headers: map[string]*mirror.HeaderValue{
 				"Host":       {Values: []string{"127.0.0.1:10080"}},
 				"User-Agent": {Values: []string{"curl/7.64.0"}},
 				"Accept":     {Values: []string{"*/*"}},
@@ -65,10 +65,10 @@ var spoeTestCases = []spoeTestCase{
 			"\x77\x77\x2d\x66\x6f\x72\x6d\x2d\x75\x72\x6c\x65\x6e\x63\x6f\x64" +
 			"\x65\x64\x00\x00\x04\x62\x6f\x64\x79\x09\x03\x48\x45\x59"),
 		expected: mirror.Request{
-			Method:      mirror.POST,
+			Method:      mirror.Method_POST,
 			Path:        "/",
-			HTTPVersion: mirror.V1_1,
-			Headers: map[string]mirror.HeaderValues{
+			HttpVersion: mirror.HTTPVersion_HTTP1_1,
+			Headers: map[string]*mirror.HeaderValue{
 				"Host":           {Values: []string{"127.0.0.1:10080"}},
 				"User-Agent":     {Values: []string{"curl/7.64.0"}},
 				"Accept":         {Values: []string{"*/*"}},

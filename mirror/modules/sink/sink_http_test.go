@@ -22,9 +22,9 @@ func TestHTTP(t *testing.T) {
 
 	in := make(chan mirror.Request, 1)
 	in <- mirror.Request{
-		Method: mirror.GET,
+		Method: mirror.Method_GET,
 		Path:   "/index.html",
-		Headers: map[string]mirror.HeaderValues{
+		Headers: map[string]*mirror.HeaderValue{
 			"X-My-Header":    {Values: []string{"value1", "value2"}},
 			"X-Other-Header": {Values: []string{"value3"}},
 		},

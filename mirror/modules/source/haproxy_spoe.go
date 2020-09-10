@@ -122,21 +122,21 @@ func (m *HAProxySPOE) handleMessage(args []spoe.Message) ([]spoe.Action, error) 
 		req := mirror.Request{
 			Method:  mirror.Method(mirror.Method_value[method]),
 			Path:    path,
-			Headers: map[string]mirror.HeaderValues{},
+			Headers: map[string]*mirror.HeaderValue{},
 			Body:    body,
 		}
 
 		switch ver {
 		case "1.1":
-			req.HTTPVersion = mirror.V1_1
+			req.HttpVersion = mirror.HTTPVersion_HTTP1_1
 		case "2":
-			req.HTTPVersion = mirror.V2
+			req.HttpVersion = mirror.HTTPVersion_HTTP2
 		default:
-			req.HTTPVersion = mirror.V1_0
+			req.HttpVersion = mirror.HTTPVersion_HTTP1_0
 		}
 
 		for name, values := range headers {
-			req.Headers[name] = mirror.HeaderValues{Values: values}
+			req.Headers[name] = &mirror.HeaderValue{Values: values}
 		}
 
 		modules.RequestsTotal.WithLabelValues(m.ctx.Name).Inc()

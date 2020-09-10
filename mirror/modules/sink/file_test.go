@@ -21,22 +21,20 @@ func TestFileJSON(t *testing.T) {
 
 	reqs := []mirror.Request{
 		{
-			Method:      mirror.GET,
+			Method:      mirror.Method_GET,
 			Path:        "/index.html",
-			HTTPVersion: mirror.V1_1,
-			Headers: map[string]mirror.HeaderValues{
+			HttpVersion: mirror.HTTPVersion_HTTP1_1,
+			Headers: map[string]*mirror.HeaderValue{
 				"Host": {Values: []string{"127.0.0.1:10080"}},
 			},
-			Body: []byte{},
 		},
 		{
-			Method:      mirror.GET,
+			Method:      mirror.Method_GET,
 			Path:        "/index.css",
-			HTTPVersion: mirror.V1_1,
-			Headers: map[string]mirror.HeaderValues{
+			HttpVersion: mirror.HTTPVersion_HTTP1_1,
+			Headers: map[string]*mirror.HeaderValue{
 				"Host": {Values: []string{"127.0.0.1:10080"}},
 			},
-			Body: []byte{},
 		},
 	}
 

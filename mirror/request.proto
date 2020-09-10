@@ -2,7 +2,6 @@ syntax = "proto3";
 package mirror;
 
 import "google/protobuf/timestamp.proto";
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 enum Method {
   GET = 0;
@@ -17,25 +16,28 @@ enum Method {
 }
 
 enum HTTPVersion {
-  V1_0 = 0;
-  V1_1 = 1;
-  V2 = 2;
+  HTTP1_0 = 0;
+  HTTP1_1 = 1;
+  HTTP2 = 2;
+}
+
+message HeaderValue { repeated string values = 2; }
+
+message MetaValue {
+  oneof value {
+    string string = 1;
+    int64 int = 2;
+    bool bool = 3;
+  }
 }
 
 message Request {
-  google.protobuf.Timestamp Time = 1 [
-    (gogoproto.jsontag) = "time",
-    (gogoproto.stdtime) = true,
-    (gogoproto.nullable) = false
-  ];
-  Method Method = 2 [ (gogoproto.jsontag) = "method" ];
-  string Path = 3 [ (gogoproto.jsontag) = "path" ];
-  HTTPVersion HTTPVersion = 4 [ (gogoproto.jsontag) = "http_version" ];
-  map<string, HeaderValues> Headers = 5
-      [ (gogoproto.jsontag) = "headers", (gogoproto.nullable) = false ];
-  bytes Body = 6 [ (gogoproto.jsontag) = "body" ];
-}
+  google.protobuf.Timestamp time = 1;
+  Method method = 2;
+  string path = 3;
+  HTTPVersion http_version = 4;
+  map<string, HeaderValue> headers = 5;
+  bytes body = 6;
 
-message HeaderValues {
-  repeated string Values = 2 [ (gogoproto.jsontag) = "values" ];
+  map<string, MetaValue> meta = 7;
 }

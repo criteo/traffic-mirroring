@@ -28,9 +28,9 @@ func BenchmarkHTTP(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		in <- mirror.Request{
-			Method: mirror.GET,
+			Method: mirror.Method_GET,
 			Path:   "/index.html",
-			Headers: map[string]mirror.HeaderValues{
+			Headers: map[string]*mirror.HeaderValue{
 				"X-My-Header":    {Values: []string{"value1", "value2"}},
 				"X-Other-Header": {Values: []string{"value3"}},
 			},
