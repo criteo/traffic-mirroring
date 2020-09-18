@@ -3,7 +3,9 @@ package source
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net"
+	"strings"
 
 	spoe "github.com/criteo/haproxy-spoe-go"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
@@ -20,20 +22,33 @@ func init() {
 	registry.Register(HAProxySPOEName, NewHAProxySPOE)
 }
 
+type mappingFunc func(req *mirror.Request, value interface{}) error
+
+var defaultMappingConfig = map[string]string{
+	"method":  "method",
+	"ver":     "ver",
+	"path":    "path",
+	"headers": "headers",
+	"body":    "body",
+}
+
 type HAProxySPOEConfig struct {
 	ListenAddr string `json:"listen_addr"`
+	Mapping    map[string]string
 }
 
 type HAProxySPOE struct {
-	cfg HAProxySPOEConfig
-	ctx mirror.ModuleContext
-	out chan mirror.Request
+	cfg     HAProxySPOEConfig
+	ctx     mirror.ModuleContext
+	out     chan mirror.Request
+	mapping map[string]mappingFunc
 }
 
 func NewHAProxySPOE(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	mod := &HAProxySPOE{
-		ctx: ctx,
-		out: make(chan mirror.Request),
+		ctx:     ctx,
+		out:     make(chan mirror.Request),
+		mapping: map[string]mappingFunc{},
 	}
 
 	err := json.Unmarshal(cfg, &mod.cfg)
@@ -43,6 +58,32 @@ func NewHAProxySPOE(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error)
 
 	if len(mod.cfg.ListenAddr) == 0 {
 		return nil, errors.New("listen_addr is required")
+	}
+
+	mappingCfg := defaultMappingConfig
+	for k, v := range mod.cfg.Mapping {
+		mappingCfg[k] = v
+	}
+
+	for k, v := range mappingCfg {
+		switch v {
+		case "method":
+			mod.mapping[k] = mapMethod
+		case "ver":
+			mod.mapping[k] = mapVer
+		case "path":
+			mod.mapping[k] = mapPath
+		case "headers":
+			mod.mapping[k] = mapHeaders
+		case "body":
+			mod.mapping[k] = mapBody
+		default:
+			if !strings.HasPrefix(v, "meta.") {
+				return nil, fmt.Errorf("unknown mapping key %q", v)
+			}
+
+			mod.mapping[k] = mapMeta(strings.TrimPrefix(v, "meta."))
+		}
 	}
 
 	err = mod.start()
@@ -88,55 +129,18 @@ func (m *HAProxySPOE) start() error {
 
 func (m *HAProxySPOE) handleMessage(args []spoe.Message) ([]spoe.Action, error) {
 	for _, msg := range args {
-		method, ok := msg.Args["method"].(string)
-		if !ok {
-			logBadMessage(`missing "method"`)
-			continue
-		}
-		path, ok := msg.Args["path"].(string)
-		if !ok {
-			logBadMessage(`missing "path"`)
-			continue
-		}
-		ver, ok := msg.Args["ver"].(string)
-		if !ok {
-			logBadMessage(`missing "ver"`)
-			continue
-		}
-		rawHeaders, ok := msg.Args["headers"].([]byte)
-		if !ok {
-			logBadMessage(`missing "headers"`)
-			continue
-		}
-		headers, err := spoe.DecodeHeaders(rawHeaders)
-		if err != nil {
-			logBadMessage(err.Error())
-			continue
-		}
-		body, ok := msg.Args["body"].([]byte)
-		if !ok {
-			logBadMessage(`missing "body"`)
-			continue
-		}
+		req := mirror.Request{}
 
-		req := mirror.Request{
-			Method:  mirror.Method(mirror.Method_value[method]),
-			Path:    path,
-			Headers: map[string]*mirror.HeaderValue{},
-			Body:    body,
-		}
+		for k, v := range msg.Args {
+			m, ok := m.mapping[k]
+			if !ok {
+				continue
+			}
 
-		switch ver {
-		case "1.1":
-			req.HttpVersion = mirror.HTTPVersion_HTTP1_1
-		case "2":
-			req.HttpVersion = mirror.HTTPVersion_HTTP2
-		default:
-			req.HttpVersion = mirror.HTTPVersion_HTTP1_0
-		}
-
-		for name, values := range headers {
-			req.Headers[name] = &mirror.HeaderValue{Values: values}
+			err := m(&req, v)
+			if err != nil {
+				log.Errorf("%s: bad message: %s", HAProxySPOEName, msg)
+			}
 		}
 
 		modules.RequestsTotal.WithLabelValues(m.ctx.Name).Inc()
@@ -146,6 +150,103 @@ func (m *HAProxySPOE) handleMessage(args []spoe.Message) ([]spoe.Action, error) 
 	return nil, nil
 }
 
-func logBadMessage(msg string) {
-	log.Errorf("%s: bad message: %s", HAProxySPOEName, msg)
+func mapMethod(req *mirror.Request, value interface{}) error {
+	method, ok := value.(string)
+	if !ok {
+		return fmt.Errorf("bad type %T received for method, expected string", value)
+	}
+
+	i, ok := mirror.Method_value[method]
+	if !ok {
+		return fmt.Errorf("unknown method %q", value)
+	}
+
+	req.Method = mirror.Method(i)
+	return nil
+}
+
+func mapPath(req *mirror.Request, value interface{}) error {
+	path, ok := value.(string)
+	if !ok {
+		return fmt.Errorf("bad type %T received for path, expected string", value)
+	}
+
+	req.Path = path
+	return nil
+}
+
+func mapVer(req *mirror.Request, value interface{}) error {
+	ver, ok := value.(string)
+	if !ok {
+		return fmt.Errorf("bad type %T received for http version, expected string", value)
+	}
+
+	switch ver {
+	case "1.1":
+		req.HttpVersion = mirror.HTTPVersion_HTTP1_1
+	case "2":
+		req.HttpVersion = mirror.HTTPVersion_HTTP2
+	default:
+		req.HttpVersion = mirror.HTTPVersion_HTTP1_0
+	}
+
+	return nil
+}
+
+func mapHeaders(req *mirror.Request, value interface{}) error {
+	rawHeaders, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("bad type %T received for headers, expected bytes", value)
+	}
+
+	headers, err := spoe.DecodeHeaders(rawHeaders)
+	if err != nil {
+		return err
+	}
+
+	req.Headers = map[string]*mirror.HeaderValue{}
+	for name, values := range headers {
+		req.Headers[name] = &mirror.HeaderValue{Values: values}
+	}
+
+	return nil
+}
+
+func mapBody(req *mirror.Request, value interface{}) error {
+	body, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("bad type %T received for body, expected bytes", value)
+	}
+
+	req.Body = body
+
+	return nil
+}
+
+func mapMeta(name string) mappingFunc {
+	return func(req *mirror.Request, value interface{}) error {
+		if req.Meta == nil {
+			req.Meta = map[string]*mirror.MetaValue{}
+		}
+
+		switch t := value.(type) {
+		case string:
+			req.Meta[name] = &mirror.MetaValue{
+				Value: &mirror.MetaValue_String_{t},
+			}
+		case int:
+			req.Meta[name] = &mirror.MetaValue{
+				Value: &mirror.MetaValue_Int{int64(t)},
+			}
+		case bool:
+			req.Meta[name] = &mirror.MetaValue{
+				Value: &mirror.MetaValue_Bool{t},
+			}
+
+		default:
+			return fmt.Errorf("unhandled type for meta %T, allowed values are string, int, bool", value)
+		}
+
+		return nil
+	}
 }
