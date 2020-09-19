@@ -6,7 +6,7 @@ import (
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
 )
 
-type FactoryFunc func(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error)
+type FactoryFunc func(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error)
 
 type Registry struct {
 	modules map[string]FactoryFunc
@@ -25,7 +25,7 @@ func (r *Registry) Register(name string, create FactoryFunc) {
 	r.modules[name] = create
 }
 
-func (r *Registry) Create(moduleType string, ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
+func (r *Registry) Create(moduleType string, ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	c, ok := r.modules[moduleType]
 	if !ok {
 		return nil, fmt.Errorf("module %q does not exist", moduleType)

@@ -119,7 +119,7 @@ func TestHAProxySPOE(t *testing.T) {
 			require.NoError(t, err)
 			defer os.RemoveAll(name)
 
-			mod, err := NewHAProxySPOE(mirror.ModuleContext{}, []byte(`{"listen_addr": "@`+name+`spoe.sock"}`))
+			mod, err := NewHAProxySPOE(&mirror.ModuleContext{}, []byte(`{"listen_addr": "@`+name+`spoe.sock"}`))
 			require.NoError(t, err)
 
 			go func() {
@@ -143,7 +143,7 @@ func TestHAProxySPOECustomMapping(t *testing.T) {
 			require.NoError(t, err)
 			defer os.RemoveAll(name)
 
-			mod, err := NewHAProxySPOE(mirror.ModuleContext{}, []byte(`
+			mod, err := NewHAProxySPOE(&mirror.ModuleContext{}, []byte(`
 				{
 					"listen_addr": "@`+name+`spoe.sock",
 					"mapping": {

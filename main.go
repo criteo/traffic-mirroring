@@ -35,7 +35,7 @@ func main() {
 	}
 
 	if cfg.ListenAddr != "" {
-		srv := server.New(cfg.ListenAddr)
+		srv := server.New(cfg.ListenAddr, cfg.Pipeline)
 		go func() {
 			err := srv.Run()
 			if err != nil {

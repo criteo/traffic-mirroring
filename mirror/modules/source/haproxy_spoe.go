@@ -9,7 +9,6 @@ import (
 
 	spoe "github.com/criteo/haproxy-spoe-go"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/modules"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
 	log "github.com/sirupsen/logrus"
 )
@@ -39,12 +38,12 @@ type HAProxySPOEConfig struct {
 
 type HAProxySPOE struct {
 	cfg     HAProxySPOEConfig
-	ctx     mirror.ModuleContext
+	ctx     *mirror.ModuleContext
 	out     chan mirror.Request
 	mapping map[string]mappingFunc
 }
 
-func NewHAProxySPOE(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
+func NewHAProxySPOE(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	mod := &HAProxySPOE{
 		ctx:     ctx,
 		out:     make(chan mirror.Request),
@@ -92,6 +91,14 @@ func NewHAProxySPOE(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error)
 	}
 
 	return mod, nil
+}
+
+func (m *HAProxySPOE) Context() *mirror.ModuleContext {
+	return m.ctx
+}
+
+func (m *HAProxySPOE) Children() [][]mirror.Module {
+	return nil
 }
 
 func (m *HAProxySPOE) Output() <-chan mirror.Request {
@@ -143,7 +150,7 @@ func (m *HAProxySPOE) handleMessage(args []spoe.Message) ([]spoe.Action, error) 
 			}
 		}
 
-		modules.RequestsTotal.WithLabelValues(m.ctx.Name).Inc()
+		m.ctx.HandledRequest()
 		m.out <- req
 	}
 

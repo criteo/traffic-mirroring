@@ -8,7 +8,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/modules"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
 	log "github.com/sirupsen/logrus"
 )
@@ -34,12 +33,12 @@ type DecoupleConfig struct {
 }
 
 type Decouple struct {
-	ctx   mirror.ModuleContext
+	ctx   *mirror.ModuleContext
 	out   chan mirror.Request
 	quiet bool
 }
 
-func NewDecouple(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
+func NewDecouple(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	c := DecoupleConfig{}
 	err := json.Unmarshal(cfg, &c)
 	if err != nil {
@@ -55,6 +54,14 @@ func NewDecouple(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	return mod, nil
 }
 
+func (m *Decouple) Context() *mirror.ModuleContext {
+	return m.ctx
+}
+
+func (m *Decouple) Children() [][]mirror.Module {
+	return nil
+}
+
 func (m *Decouple) Output() <-chan mirror.Request {
 	return m.out
 }
@@ -64,7 +71,7 @@ func (m *Decouple) SetInput(c <-chan mirror.Request) {
 
 	go func() {
 		for r := range c {
-			modules.RequestsTotal.WithLabelValues(m.ctx.Name).Inc()
+			m.ctx.HandledRequest()
 			select {
 			case m.out <- r:
 			default:

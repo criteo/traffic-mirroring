@@ -13,7 +13,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror/expr"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/modules"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
 	log "github.com/sirupsen/logrus"
 )
@@ -51,7 +50,7 @@ type FileConfig struct {
 }
 
 type File struct {
-	ctx mirror.ModuleContext
+	ctx *mirror.ModuleContext
 	cfg FileConfig
 
 	f   *bufio.Writer
@@ -67,7 +66,7 @@ type File struct {
 	ready bool
 }
 
-func NewFile(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
+func NewFile(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	c := FileConfig{}
 	err := json.Unmarshal(cfg, &c)
 	if err != nil {
@@ -90,6 +89,14 @@ func NewFile(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	return mod, nil
 }
 
+func (m *File) Context() *mirror.ModuleContext {
+	return m.ctx
+}
+
+func (m *File) Children() [][]mirror.Module {
+	return nil
+}
+
 func (m *File) Output() <-chan mirror.Request {
 	return m.out
 }
@@ -104,7 +111,7 @@ func (m *File) SetInput(c <-chan mirror.Request) {
 				}
 			}
 
-			modules.RequestsTotal.WithLabelValues(m.ctx.Name).Inc()
+			m.ctx.HandledRequest()
 			err := m.encoder(m.f, r)
 			if err != nil {
 				log.Errorf("%s: %s", FileName, err)

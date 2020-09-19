@@ -15,12 +15,12 @@ func init() {
 }
 
 type Seq struct {
-	ctx     mirror.ModuleContext
+	ctx     *mirror.ModuleContext
 	out     <-chan mirror.Request
 	modules []mirror.Module
 }
 
-func NewSeq(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
+func NewSeq(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	mods, err := config.CreateModules(cfg)
 	if err != nil {
 		return nil, err
@@ -36,9 +36,18 @@ func NewSeq(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	}
 
 	return &Seq{
-		ctx: ctx,
-		out: lastOut,
+		ctx:     ctx,
+		out:     lastOut,
+		modules: mods,
 	}, nil
+}
+
+func (m *Seq) Context() *mirror.ModuleContext {
+	return m.ctx
+}
+
+func (m *Seq) Children() [][]mirror.Module {
+	return [][]mirror.Module{m.modules}
 }
 
 func (m *Seq) Output() <-chan mirror.Request {
