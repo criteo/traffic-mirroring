@@ -48,19 +48,19 @@ type progExpr struct {
 }
 
 func (e progExpr) Type() Type {
-	typ := e.ast.ResultType()
+	typ := e.ast.ResultType().String()
 
 	switch typ {
-	case decls.Double:
+	case decls.Double.String():
 		return TypeNumber
-	case decls.Int:
+	case decls.Int.String():
 		return TypeNumber
-	case decls.String:
+	case decls.String.String():
 		return TypeString
-	case decls.Bool:
+	case decls.Bool.String():
 		return TypeBool
 	default:
-		return Type(typ.String())
+		return Type(typ)
 	}
 }
 
