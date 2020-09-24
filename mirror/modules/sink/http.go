@@ -15,7 +15,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/common/log"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/modules"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
 )
 
@@ -48,7 +47,7 @@ type HTTPConfig struct {
 }
 
 type HTTP struct {
-	ctx    mirror.ModuleContext
+	ctx    *mirror.ModuleContext
 	out    chan mirror.Request
 	tasks  chan mirror.Request
 	client *http.Client
@@ -58,7 +57,7 @@ type HTTP struct {
 	maxWorkers int
 }
 
-func NewHTTP(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
+func NewHTTP(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	c := HTTPConfig{}
 
 	err := json.Unmarshal(cfg, &c)
@@ -94,6 +93,14 @@ func NewHTTP(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	return mod, nil
 }
 
+func (m *HTTP) Context() *mirror.ModuleContext {
+	return m.ctx
+}
+
+func (m *HTTP) Children() [][]mirror.Module {
+	return nil
+}
+
 func (m *HTTP) Output() <-chan mirror.Request {
 	return m.out
 }
@@ -117,7 +124,7 @@ func (m *HTTP) SetInput(c <-chan mirror.Request) {
 }
 
 func (m *HTTP) sendRequest(req mirror.Request) {
-	modules.RequestsTotal.WithLabelValues(m.ctx.Name).Inc()
+	m.ctx.HandledRequest()
 
 	headers := http.Header{}
 	for name, vals := range req.Headers {

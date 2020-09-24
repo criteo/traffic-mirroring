@@ -15,7 +15,7 @@ func BenchmarkHTTP(b *testing.B) {
 		rw.Write(res)
 	}))
 
-	mod, err := NewHTTP(mirror.ModuleContext{}, []byte(`{
+	mod, err := NewHTTP(&mirror.ModuleContext{}, []byte(`{
 		"target_url": "`+server.URL+`",
 		"timeout": "10s",
 		"parallel": 10

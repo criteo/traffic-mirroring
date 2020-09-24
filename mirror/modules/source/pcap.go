@@ -15,7 +15,6 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/modules"
 	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
 	log "github.com/sirupsen/logrus"
 )
@@ -65,12 +64,12 @@ type PCapConfig struct {
 
 type PCap struct {
 	cfg  PCapConfig
-	ctx  mirror.ModuleContext
+	ctx  *mirror.ModuleContext
 	out  chan mirror.Request
 	buff *bytes.Buffer
 }
 
-func NewPCap(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
+func NewPCap(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	mod := &PCap{
 		ctx:  ctx,
 		out:  make(chan mirror.Request),
@@ -92,6 +91,14 @@ func NewPCap(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	}
 
 	return mod, nil
+}
+
+func (m *PCap) Context() *mirror.ModuleContext {
+	return m.ctx
+}
+
+func (m *PCap) Children() [][]mirror.Module {
+	return nil
 }
 
 func (m *PCap) Output() <-chan mirror.Request {
@@ -139,7 +146,7 @@ func (m *PCap) start() error {
 				continue
 			}
 
-			modules.RequestsTotal.WithLabelValues(m.ctx.Name).Inc()
+			m.ctx.HandledRequest()
 			m.out <- req
 		}
 	}()

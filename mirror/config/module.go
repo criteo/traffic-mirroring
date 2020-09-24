@@ -29,9 +29,11 @@ func CreateModule(b []byte) (mirror.Module, error) {
 	}
 	moduleIndex[mc.Type]++
 
-	ctx := mirror.ModuleContext{
+	ctx := &mirror.ModuleContext{
+		Type: mc.Type,
 		Name: name,
 	}
+	go ctx.Run()
 
 	return registry.Create(mc.Type, ctx, mc.Config)
 }

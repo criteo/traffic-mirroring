@@ -17,6 +17,7 @@ func init() {
 }
 
 type Fanout struct {
+	ctx     *mirror.ModuleContext
 	out     chan mirror.Request
 	modules []mirror.Module
 	in      []chan mirror.Request
@@ -24,8 +25,9 @@ type Fanout struct {
 	outClosed uint32
 }
 
-func NewFanout(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
+func NewFanout(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 	mod := &Fanout{
+		ctx: ctx,
 		out: make(chan mirror.Request),
 	}
 
@@ -41,7 +43,21 @@ func NewFanout(ctx mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 		go mod.consume(sub)
 	}
 
+	mod.modules = mods
+
 	return mod, nil
+}
+
+func (m *Fanout) Context() *mirror.ModuleContext {
+	return m.ctx
+}
+
+func (m *Fanout) Children() [][]mirror.Module {
+	res := [][]mirror.Module{}
+	for _, m := range m.modules {
+		res = append(res, []mirror.Module{m})
+	}
+	return res
 }
 
 func (m *Fanout) Output() <-chan mirror.Request {
