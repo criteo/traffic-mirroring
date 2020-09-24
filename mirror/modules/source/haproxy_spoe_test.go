@@ -80,6 +80,38 @@ var spoeTestCases = []spoeTestCase{
 	},
 }
 
+var spoeCustomMappingTestCase = []spoeTestCase{
+	{
+		name: "Custom var and mapping with defaults",
+		spoe: []byte("\x00\x00\x00\x8e\x03\x00\x00\x00\x01\x00\x01\x06\x6d\x69\x72\x72" +
+			"\x6f\x72\x06\x06\x6d\x65\x74\x68\x6f\x64\x08\x03\x47\x45\x54\x09" +
+			"\x68\x74\x74\x70\x5f\x70\x61\x74\x68\x08\x01\x2f\x03\x76\x65\x72" +
+			"\x08\x03\x31\x2e\x31\x07\x68\x65\x61\x64\x65\x72\x73\x09\x39\x04" +
+			"\x68\x6f\x73\x74\x0f\x31\x32\x37\x2e\x30\x2e\x30\x2e\x31\x3a\x31" +
+			"\x30\x30\x38\x30\x0a\x75\x73\x65\x72\x2d\x61\x67\x65\x6e\x74\x0b" +
+			"\x63\x75\x72\x6c\x2f\x37\x2e\x36\x34\x2e\x30\x06\x61\x63\x63\x65" +
+			"\x70\x74\x03\x2a\x2f\x2a\x00\x00\x04\x62\x6f\x64\x79\x09\x00\x06" +
+			"\x6d\x79\x5f\x76\x61\x72\x08\x0a\x74\x65\x73\x74\x5f\x76\x61\x6c" +
+			"\x75\x65"),
+		expected: mirror.Request{
+			Method:      mirror.Method_GET,
+			Path:        "/",
+			HttpVersion: mirror.HTTPVersion_HTTP1_1,
+			Headers: map[string]*mirror.HeaderValue{
+				"Host":       {Values: []string{"127.0.0.1:10080"}},
+				"User-Agent": {Values: []string{"curl/7.64.0"}},
+				"Accept":     {Values: []string{"*/*"}},
+			},
+			Body: []byte{},
+			Meta: map[string]*mirror.MetaValue{
+				"my_var": {
+					Value: &mirror.MetaValue_String_{String_: "test_value"},
+				},
+			},
+		},
+	},
+}
+
 func TestHAProxySPOE(t *testing.T) {
 	for _, testCase := range spoeTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -88,6 +120,38 @@ func TestHAProxySPOE(t *testing.T) {
 			defer os.RemoveAll(name)
 
 			mod, err := NewHAProxySPOE(mirror.ModuleContext{}, []byte(`{"listen_addr": "@`+name+`spoe.sock"}`))
+			require.NoError(t, err)
+
+			go func() {
+				conn, err := net.Dial("unix", name+"spoe.sock")
+				require.NoError(t, err)
+
+				conn.Write([]byte(preamble))
+				conn.Write(testCase.spoe)
+			}()
+
+			req := <-mod.Output()
+			require.Equal(t, testCase.expected, req)
+		})
+	}
+}
+
+func TestHAProxySPOECustomMapping(t *testing.T) {
+	for _, testCase := range spoeCustomMappingTestCase {
+		t.Run(testCase.name, func(t *testing.T) {
+			name, err := ioutil.TempDir("/tmp", "http-mirror-test")
+			require.NoError(t, err)
+			defer os.RemoveAll(name)
+
+			mod, err := NewHAProxySPOE(mirror.ModuleContext{}, []byte(`
+				{
+					"listen_addr": "@`+name+`spoe.sock",
+					"mapping": {
+						"http_path": "path",
+						"my_var": "meta.my_var"
+					}
+				}
+			`))
 			require.NoError(t, err)
 
 			go func() {

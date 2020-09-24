@@ -63,6 +63,31 @@ Example:
 | Param         | Value                                    |
 | ------------- | ---------------------------------------- |
 | `listen_addr` | Can be `<ip>:<port>` or `@<socket_file>` |
+| `mapping`     | See Mapping                              |
+
+##### Mapping
+
+This config key allows to customize the mapping between SPOE arguments and traffic-mirroring, and add metas to the request.
+Left side is the SPOE name, right side is traffic-mirroring.
+User provided values will be merged with :
+
+```json
+{
+  "method": "method",
+  "ver": "ver",
+  "path": "path",
+  "headers": "headers",
+  "body": "body"
+}
+```
+
+Meta can be added like so :
+
+```json
+{
+  "my_spoe_var": "meta.my_spoe_var"
+}
+```
 
 #### source.pcap
 
