@@ -134,24 +134,32 @@ func (m *HAProxySPOE) start() error {
 	return nil
 }
 
-func (m *HAProxySPOE) handleMessage(args []spoe.Message) ([]spoe.Action, error) {
-	for _, msg := range args {
+func (m *HAProxySPOE) handleMessage(msgs *spoe.MessageIterator) ([]spoe.Action, error) {
+	for msgs.Next() {
+		msg := msgs.Message
+
 		req := mirror.Request{}
 
-		for k, v := range msg.Args {
-			m, ok := m.mapping[k]
+		for msg.Args.Next() {
+			arg := msg.Args.Arg
+
+			m, ok := m.mapping[arg.Name]
 			if !ok {
 				continue
 			}
 
-			err := m(&req, v)
+			err := m(&req, arg.Value)
 			if err != nil {
-				log.Errorf("%s: bad message: %s", HAProxySPOEName, msg)
+				log.Errorf("%s: bad message: %s", HAProxySPOEName, err)
 			}
 		}
 
 		m.ctx.HandledRequest()
 		m.out <- req
+	}
+
+	if err := msgs.Error(); err != nil {
+		log.Errorf("%s: error handling message: %s", HAProxySPOEName, err)
 	}
 
 	return nil, nil
