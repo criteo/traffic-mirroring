@@ -244,3 +244,52 @@ In the following example we use a `control.rate_limit` in coordination with a `c
 | Param | Value                       |
 | ----- | --------------------------- |
 | `rps` | Maximum requests per second |
+
+#### control.split_by
+
+Splits the requets into multiple pipelines based on an arbitrary value. This is useful for example to apply rate limiting on a per-host basis.
+
+In the following example we will do just that :
+
+```json
+[
+  {
+    "type": "source.haproxy_spoe",
+    "config": {
+      "listen_addr": "127.0.0.1:9999"
+    }
+  },
+  {
+    "type": "control.split_by",
+    "config": {
+      "expr": "{req.header('Host')}",
+      "pipeline": {
+        "type": "control.seq",
+        "config": [
+          {
+            "type": "control.decouple",
+            "config": {}
+          },
+          {
+            "type": "control.rate_limit",
+            "config": {
+              "rps": "{req.meta.rps.int}"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "sink.http",
+    "config": {
+      "timeout": "1s",
+      "target_url": "http://127.0.0.1:8002"
+    }
+  }
+]
+```
+
+| Param | Value                       |
+| ----- | --------------------------- |
+| `rps` | Maximum requests per second |
