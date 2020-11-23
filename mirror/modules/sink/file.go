@@ -11,9 +11,9 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/expr"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
+	"github.com/criteo/traffic-mirroring/mirror"
+	"github.com/criteo/traffic-mirroring/mirror/expr"
+	"github.com/criteo/traffic-mirroring/mirror/registry"
 	log "github.com/sirupsen/logrus"
 )
 

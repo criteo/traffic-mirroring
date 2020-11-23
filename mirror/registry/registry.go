@@ -3,7 +3,7 @@ package registry
 import (
 	"fmt"
 
-	"github.com/shimmerglass/http-mirror-pipeline/mirror"
+	"github.com/criteo/traffic-mirroring/mirror"
 )
 
 type FactoryFunc func(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error)

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/emicklei/dot"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror"
+	"github.com/criteo/traffic-mirroring/mirror"
 )
 
 func FromModule(m mirror.Module) *dot.Graph {

@@ -4,11 +4,11 @@ import (
 	"flag"
 	"os"
 
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/config"
-	_ "github.com/shimmerglass/http-mirror-pipeline/mirror/modules/control"
-	_ "github.com/shimmerglass/http-mirror-pipeline/mirror/modules/sink"
-	_ "github.com/shimmerglass/http-mirror-pipeline/mirror/modules/source"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/server"
+	"github.com/criteo/traffic-mirroring/mirror/config"
+	_ "github.com/criteo/traffic-mirroring/mirror/modules/control"
+	_ "github.com/criteo/traffic-mirroring/mirror/modules/sink"
+	_ "github.com/criteo/traffic-mirroring/mirror/modules/source"
+	"github.com/criteo/traffic-mirroring/mirror/server"
 	log "github.com/sirupsen/logrus"
 )
 

@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	spoe "github.com/criteo/haproxy-spoe-go"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
+	"github.com/criteo/traffic-mirroring/mirror"
+	"github.com/criteo/traffic-mirroring/mirror/registry"
 	log "github.com/sirupsen/logrus"
 )
 

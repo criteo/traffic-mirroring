@@ -1,7 +1,7 @@
 package control
 
 import (
-	"github.com/shimmerglass/http-mirror-pipeline/mirror"
+	"github.com/criteo/traffic-mirroring/mirror"
 )
 
 type Virtual struct {

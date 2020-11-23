@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/shimmerglass/http-mirror-pipeline/mirror"
+	"github.com/criteo/traffic-mirroring/mirror"
 )
 
 type Type string

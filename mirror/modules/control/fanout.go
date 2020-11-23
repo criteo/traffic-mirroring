@@ -3,9 +3,9 @@ package control
 import (
 	"sync/atomic"
 
-	"github.com/shimmerglass/http-mirror-pipeline/mirror"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/config"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
+	"github.com/criteo/traffic-mirroring/mirror"
+	"github.com/criteo/traffic-mirroring/mirror/config"
+	"github.com/criteo/traffic-mirroring/mirror/registry"
 )
 
 const (
