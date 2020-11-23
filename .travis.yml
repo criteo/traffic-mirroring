@@ -1,0 +1,8 @@
+language: go
+go:
+  - master
+  - 1.15.x
+addons:
+  apt:
+    packages:
+      - libpcap0.8-dev  
