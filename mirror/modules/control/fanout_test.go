@@ -3,7 +3,7 @@ package control
 import (
 	"testing"
 
-	"github.com/shimmerglass/http-mirror-pipeline/mirror"
+	"github.com/criteo/traffic-mirroring/mirror"
 	"github.com/stretchr/testify/require"
 )
 

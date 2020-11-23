@@ -1,6 +1,6 @@
 package registry
 
-import "github.com/shimmerglass/http-mirror-pipeline/mirror"
+import "github.com/criteo/traffic-mirroring/mirror"
 
 var DefaultRegistry = New()
 

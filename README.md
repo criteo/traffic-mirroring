@@ -10,7 +10,7 @@ Its modular architecture makes it easy to build powerful pipelines that fit spec
 
 A simple pipeline that takes requests from HAProxy and sends them to a test server.
 
-![simple](https://github.com/ShimmerGlass/http-mirror-pipeline/raw/master/docs/simple.png)
+![simple](https://github.com/criteo/traffic-mirroring/raw/master/docs/simple.png)
 
 `config.json` :
 
@@ -39,7 +39,7 @@ A more complex use case. In this example we use two pipelines:
 - The first one takes requests from HAProxy and sends them to a Kafka queue
 - The second one reads the message from Kafka, and both writes them to disk for storage and sends them to a test server
 
-![kafka](https://github.com/ShimmerGlass/http-mirror-pipeline/raw/master/docs/kafka.png)
+![kafka](https://github.com/criteo/traffic-mirroring/raw/master/docs/kafka.png)
 
 ## Modules
 

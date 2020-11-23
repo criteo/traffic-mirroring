@@ -6,9 +6,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rakyll/statik/fs"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/graph"
-	_ "github.com/shimmerglass/http-mirror-pipeline/mirror/server/statik"
+	"github.com/criteo/traffic-mirroring/mirror"
+	"github.com/criteo/traffic-mirroring/mirror/graph"
+	_ "github.com/criteo/traffic-mirroring/mirror/server/statik"
 	log "github.com/sirupsen/logrus"
 )
 

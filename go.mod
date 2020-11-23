@@ -1,4 +1,4 @@
-module github.com/shimmerglass/http-mirror-pipeline
+module github.com/criteo/traffic-mirroring
 
 go 1.15
 

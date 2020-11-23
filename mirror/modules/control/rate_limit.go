@@ -6,9 +6,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/shimmerglass/http-mirror-pipeline/mirror"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/expr"
-	"github.com/shimmerglass/http-mirror-pipeline/mirror/registry"
+	"github.com/criteo/traffic-mirroring/mirror"
+	"github.com/criteo/traffic-mirroring/mirror/expr"
+	"github.com/criteo/traffic-mirroring/mirror/registry"
 )
 
 const (
