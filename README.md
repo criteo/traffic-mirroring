@@ -1,6 +1,6 @@
-# http-mirror-pipeline
+# traffic-mirroring
 
-http-mirror-pipeline is a tool to mirror HTTP request for continuous testing and benchmarking, replayable logging...
+traffic-mirroring is a tool to mirror HTTP request for continuous testing and benchmarking, replayable logging...
 
 Its modular architecture makes it easy to build powerful pipelines that fit specific needs.
 
@@ -177,7 +177,7 @@ Example:
 
 #### control.decouple
 
-http-mirror-pipeline is blocking, meaning a slow sink will slow down upstream modules. While this is useful when reading from a database for example, there are situations where it is preferable to drop requests instead if the output is struggling.
+traffic-mirroring is blocking, meaning a slow sink will slow down upstream modules. While this is useful when reading from a database for example, there are situations where it is preferable to drop requests instead if the output is struggling.
 
 In the following example we decouple the sink from the source to avoid slowing down haproxy :
 
