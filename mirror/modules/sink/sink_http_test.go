@@ -11,10 +11,12 @@ import (
 )
 
 func TestHTTP(t *testing.T) {
+	reqCount := 0
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "/index.html", r.URL.Path)
 		assert.Equal(t, r.Header["X-My-Header"], []string{"value1", "value2"})
 		assert.Equal(t, r.Header["X-Other-Header"], []string{"value3"})
+		reqCount++
 	}))
 
 	mod, err := NewHTTP(&mirror.ModuleContext{}, []byte(`{"target_url": "`+server.URL+`", "timeout": "10s"}`))
@@ -34,4 +36,6 @@ func TestHTTP(t *testing.T) {
 	close(in)
 
 	<-mod.Output()
+
+	require.Equal(t, 1, reqCount)
 }
