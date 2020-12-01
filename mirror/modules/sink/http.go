@@ -9,13 +9,14 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync"
 	"time"
 
+	"github.com/criteo/traffic-mirroring/mirror"
+	"github.com/criteo/traffic-mirroring/mirror/registry"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/common/log"
-	"github.com/criteo/traffic-mirroring/mirror"
-	"github.com/criteo/traffic-mirroring/mirror/registry"
 )
 
 const (
@@ -55,6 +56,7 @@ type HTTP struct {
 
 	numWorkers int
 	maxWorkers int
+	workersWG  sync.WaitGroup
 }
 
 func NewHTTP(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
@@ -116,9 +118,12 @@ func (m *HTTP) SetInput(c <-chan mirror.Request) {
 				default:
 					go m.runWorker(r)
 					m.numWorkers++
+					m.workersWG.Add(1)
 				}
 			}
 		}
+		close(m.tasks)
+		m.workersWG.Wait()
 		close(m.out)
 	}()
 }
@@ -157,17 +162,23 @@ func (m *HTTP) sendRequest(req mirror.Request) {
 }
 
 func (m *HTTP) runWorker(req mirror.Request) {
+	defer m.workersWG.Done()
+
 	m.sendRequest(req)
 	timeout := time.NewTimer(workerTimeout)
 
 	for {
 		select {
-		case req := <-m.tasks:
+		case req, ok := <-m.tasks:
+			if !ok {
+				return
+			}
+
 			m.sendRequest(req)
 			timeout.Reset(workerTimeout)
 		case <-timeout.C:
 			m.numWorkers--
-			break
+			return
 		}
 	}
 }
