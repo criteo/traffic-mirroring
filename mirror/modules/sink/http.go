@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strconv"
 	"sync"
 	"time"
@@ -17,6 +16,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/common/log"
+	"github.com/criteo/traffic-mirroring/mirror/expr"
 )
 
 const (
@@ -42,9 +42,9 @@ func init() {
 }
 
 type HTTPConfig struct {
-	TargetURL string `json:"target_url,omitempty"`
-	Timeout   string `json:"timeout,omitempty"`
-	Parallel  int    `json:"parallel"`
+	TargetURL *expr.StringExpr `json:"target_url,omitempty"`
+	Timeout   string           `json:"timeout,omitempty"`
+	Parallel  int              `json:"parallel"`
 }
 
 type HTTP struct {
@@ -52,7 +52,7 @@ type HTTP struct {
 	out    chan mirror.Request
 	tasks  chan mirror.Request
 	client *http.Client
-	target *url.URL
+	cfg    HTTPConfig
 
 	numWorkers int
 	maxWorkers int
@@ -72,11 +72,6 @@ func NewHTTP(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 		return nil, fmt.Errorf("timeout: %w", err)
 	}
 
-	url, err := url.Parse(c.TargetURL)
-	if err != nil {
-		return nil, err
-	}
-
 	maxWorkers := 1
 	if c.Parallel > 0 {
 		maxWorkers = c.Parallel
@@ -84,12 +79,12 @@ func NewHTTP(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 
 	mod := &HTTP{
 		ctx:   ctx,
+		cfg:   c,
 		out:   make(chan mirror.Request),
 		tasks: make(chan mirror.Request),
 		client: &http.Client{
 			Timeout: timeout,
 		},
-		target:     url,
 		maxWorkers: maxWorkers,
 	}
 	return mod, nil
@@ -130,27 +125,33 @@ func (m *HTTP) SetInput(c <-chan mirror.Request) {
 
 func (m *HTTP) sendRequest(req mirror.Request) {
 	m.ctx.HandledRequest()
+	baseURL, err := m.cfg.TargetURL.Eval(req)
+	if err != nil {
+		log.Errorf("%s: could not evaluate target URL: %s", HTTPName, err)
+		return
+	}
+	url := baseURL + req.Path
 
 	headers := http.Header{}
 	for name, vals := range req.Headers {
 		headers[name] = vals.Values
 	}
 
-	hreq := &http.Request{
-		Method: req.Method.String(),
-		URL: &url.URL{
-			Scheme: m.target.Scheme,
-			Host:   m.target.Host,
-			Path:   req.Path,
-		},
-		Header: headers,
-		Body:   ioutil.NopCloser(bytes.NewBuffer(req.Body)),
+	hreq, err := http.NewRequest(
+		req.Method.String(),
+		url,
+		ioutil.NopCloser(bytes.NewBuffer(req.Body)),
+	)
+	if err != nil {
+		log.Errorf("%s: could not create request: %s", HTTPName, err)
+		return
 	}
+	hreq.Header = headers
 
 	start := time.Now()
 	res, err := m.client.Do(hreq)
 	if err != nil {
-		log.Errorf("%s: %q: %s", HTTPName, m.target.Host, err)
+		log.Errorf("%s: %q: %s", HTTPName, url, err)
 		return
 	}
 

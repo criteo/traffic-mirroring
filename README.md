@@ -109,7 +109,7 @@ Example:
 
 #### sink.http
 
-Send the incomming requests to the specified host.
+Send the incomming requests to the specified host. ( or a evaluable expression )
 
 Example:
 
@@ -122,6 +122,18 @@ Example:
   }
 }
 ```
+or
+```json
+{
+  "type": "sink.http",
+  "config": {
+    "timeout": "1s",
+    "target_url": "{req.meta.target.string}"
+  }
+}
+```
+
+
 
 | Param        | Value                                                       |
 | ------------ | ----------------------------------------------------------- |
