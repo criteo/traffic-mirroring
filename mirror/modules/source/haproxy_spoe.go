@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"syscall"
 
 	spoe "github.com/criteo/haproxy-spoe-go"
 	"github.com/criteo/traffic-mirroring/mirror"
@@ -115,6 +116,7 @@ func (m *HAProxySPOE) start() error {
 	var l net.Listener
 	var err error
 	if m.cfg.ListenAddr[0] == '@' {
+		syscall.Unlink(m.cfg.ListenAddr[1:])
 		l, err = net.Listen("unix", m.cfg.ListenAddr[1:])
 	} else {
 		l, err = net.Listen("tcp", m.cfg.ListenAddr)
