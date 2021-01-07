@@ -7,6 +7,7 @@ import (
 	"net"
 	"strings"
 	"syscall"
+	"time"
 
 	spoe "github.com/criteo/haproxy-spoe-go"
 	"github.com/criteo/traffic-mirroring/mirror"
@@ -33,15 +34,17 @@ var defaultMappingConfig = map[string]string{
 }
 
 type HAProxySPOEConfig struct {
-	ListenAddr string `json:"listen_addr"`
-	Mapping    map[string]string
+	ListenAddr  string `json:"listen_addr"`
+	IdleTimeout string `json:"idle_timeout"`
+	Mapping     map[string]string
 }
 
 type HAProxySPOE struct {
-	cfg     HAProxySPOEConfig
-	ctx     *mirror.ModuleContext
-	out     chan mirror.Request
-	mapping map[string]mappingFunc
+	cfg         HAProxySPOEConfig
+	ctx         *mirror.ModuleContext
+	out         chan mirror.Request
+	mapping     map[string]mappingFunc
+	idleTimeout time.Duration
 }
 
 func NewHAProxySPOE(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
@@ -58,6 +61,14 @@ func NewHAProxySPOE(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error
 
 	if len(mod.cfg.ListenAddr) == 0 {
 		return nil, errors.New("listen_addr is required")
+	}
+
+	if mod.cfg.IdleTimeout != "" {
+		t, err := time.ParseDuration(mod.cfg.IdleTimeout)
+		if err != nil {
+			return nil, errors.New("idle_timeout parse")
+		}
+		mod.idleTimeout = t
 	}
 
 	mappingCfg := defaultMappingConfig
@@ -111,7 +122,9 @@ func (m *HAProxySPOE) SetInput(c <-chan mirror.Request) {
 }
 
 func (m *HAProxySPOE) start() error {
-	agent := spoe.New(m.handleMessage)
+	agent := spoe.NewWithConfig(m.handleMessage, spoe.Config{
+		IdleTimeout: m.idleTimeout,
+	})
 
 	var l net.Listener
 	var err error
