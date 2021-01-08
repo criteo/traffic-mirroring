@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	HAProxySPOEName = "source.haproxy_spoe"
+	HAProxySPOEName        = "source.haproxy_spoe"
+	DefaultSpoeIdleTimeout = 30
 )
 
 func init() {
@@ -68,7 +69,9 @@ func NewHAProxySPOE(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error
 		if err != nil {
 			return nil, errors.New("idle_timeout parse")
 		}
-		mod.idleTimeout = t
+		mod.idleTimeout = t * time.Second
+	} else {
+		mod.idleTimeout = DefaultSpoeIdleTimeout * time.Second
 	}
 
 	mappingCfg := defaultMappingConfig
