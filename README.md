@@ -60,10 +60,11 @@ Example:
 }
 ```
 
-| Param         | Value                                    |
-| ------------- | ---------------------------------------- |
-| `listen_addr` | Can be `<ip>:<port>` or `@<socket_file>` |
-| `mapping`     | See Mapping                              |
+| Param           | Value                                    |
+| --------------- | ---------------------------------------- |
+| `listen_addr`   | Can be `<ip>:<port>` or `@<socket_file>` |
+| `idle_timeout ` | Idle Timeout in seconds                  |
+| `mapping`       | See Mapping                              |
 
 ##### Mapping
 
