@@ -125,7 +125,10 @@ func (m *HAProxySPOE) SetInput(c <-chan mirror.Request) {
 }
 
 func (m *HAProxySPOE) start() error {
+
 	agent := spoe.NewWithConfig(m.handleMessage, spoe.Config{
+		ReadTimeout:  time.Second,
+		WriteTimeout: time.Second,
 		IdleTimeout: m.idleTimeout,
 	})
 
