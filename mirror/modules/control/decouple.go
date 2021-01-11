@@ -68,9 +68,11 @@ func (m *Decouple) Output() <-chan mirror.Request {
 
 func (m *Decouple) SetInput(c <-chan mirror.Request) {
 	dropped := uint32(0)
+	processed := uint32(0)
 
 	go func() {
 		for r := range c {
+			atomic.AddUint32(&processed, 1)
 			m.ctx.HandledRequest()
 			select {
 			case m.out <- r:
@@ -85,12 +87,13 @@ func (m *Decouple) SetInput(c <-chan mirror.Request) {
 	if !m.quiet {
 		go func() {
 			for range time.Tick(logDroppedInterval) {
-				v := atomic.SwapUint32(&dropped, 0)
-				if v == 0 {
+				d := atomic.SwapUint32(&dropped, 0)
+				p := atomic.SwapUint32(&processed, 0)
+				if d == 0 {
 					continue
 				}
 
-				log.Warnf("%s: dropped %d requests", DecoupleName, v)
+				log.Warnf("%s: dropped %d of %d requests", DecoupleName, d, p)
 			}
 		}()
 	}
