@@ -114,6 +114,7 @@ func (m *HTTP) SetInput(c <-chan mirror.Request) {
 					go m.runWorker(r)
 					m.numWorkers++
 					m.workersWG.Add(1)
+					log.Debugf("%s: Increase numWorkers to %d/%d", HTTPName, m.numWorkers, m.maxWorkers)
 				}
 			}
 		}
@@ -179,6 +180,7 @@ func (m *HTTP) runWorker(req mirror.Request) {
 			timeout.Reset(workerTimeout)
 		case <-timeout.C:
 			m.numWorkers--
+			log.Debugf("%s: Timeout, Decrease numWorkers to %d/%d", HTTPName, m.numWorkers, m.maxWorkers)
 			return
 		}
 	}
