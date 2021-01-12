@@ -72,7 +72,7 @@ func NewHTTP(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 		return nil, fmt.Errorf("timeout: %w", err)
 	}
 
-	maxWorkers := 1
+	maxWorkers := 10
 	if c.Parallel > 0 {
 		maxWorkers = c.Parallel
 	}
