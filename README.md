@@ -204,7 +204,9 @@ In the following example we decouple the sink from the source to avoid slowing d
   },
   {
     "type": "control.decouple",
-    "config": {}
+    "config": {
+      "queue_size": 500
+    }
   },
   {
     "type": "sink.http",
@@ -218,7 +220,8 @@ In the following example we decouple the sink from the source to avoid slowing d
 
 | Param   | Value                                                 |
 | ------- | ----------------------------------------------------- |
-| `quiet` | Do not log dropped messages summary. Default: `false` |
+| `quiet`      | Do not log dropped messages summary. Default: `false` |
+| `queue_size` | Size of the output queue. Default: `100` |
 
 #### control.rate_limit
 
