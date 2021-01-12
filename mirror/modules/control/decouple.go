@@ -30,6 +30,7 @@ func init() {
 
 type DecoupleConfig struct {
 	Quiet bool `json:"log"`
+	QueueSize int `json:"queue_size"`
 }
 
 type Decouple struct {
@@ -45,9 +46,14 @@ func NewDecouple(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 		return nil, err
 	}
 
+	queueSize := 100
+	if c.QueueSize > 0 {
+		queueSize = c.QueueSize
+	}
+
 	mod := &Decouple{
 		ctx:   ctx,
-		out:   make(chan mirror.Request),
+		out:   make(chan mirror.Request, queueSize),
 		quiet: c.Quiet,
 	}
 
