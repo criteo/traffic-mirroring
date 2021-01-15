@@ -96,10 +96,11 @@ func (m *Decouple) SetInput(c <-chan mirror.Request) {
 				d := atomic.SwapUint32(&dropped, 0)
 				p := atomic.SwapUint32(&processed, 0)
 				if d == 0 {
-					continue
+					log.Debugf("%s: dropped %d of %d requests", DecoupleName, d, p)
+				} else {
+					log.Warnf("%s: dropped %d of %d requests", DecoupleName, d, p)
 				}
 
-				log.Warnf("%s: dropped %d of %d requests", DecoupleName, d, p)
 			}
 		}()
 	}
