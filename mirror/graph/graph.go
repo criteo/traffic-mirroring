@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/emicklei/dot"
 	"github.com/criteo/traffic-mirroring/mirror"
+	"github.com/emicklei/dot"
 )
 
 func FromModule(m mirror.Module) *dot.Graph {

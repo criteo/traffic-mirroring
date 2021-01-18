@@ -5,10 +5,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/criteo/traffic-mirroring/mirror"
 	"github.com/criteo/traffic-mirroring/mirror/registry"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -29,8 +29,8 @@ func init() {
 }
 
 type DecoupleConfig struct {
-	Quiet bool `json:"log"`
-	QueueSize int `json:"queue_size"`
+	Quiet     bool `json:"log"`
+	QueueSize int  `json:"queue_size"`
 }
 
 type Decouple struct {

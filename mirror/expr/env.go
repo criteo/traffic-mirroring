@@ -1,12 +1,12 @@
 package expr
 
 import (
+	"github.com/criteo/traffic-mirroring/mirror"
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/checker/decls"
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"
 	"github.com/google/cel-go/interpreter/functions"
-	"github.com/criteo/traffic-mirroring/mirror"
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
