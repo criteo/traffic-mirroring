@@ -8,12 +8,12 @@ import (
 	"io"
 	"os"
 
-	"github.com/gogo/protobuf/proto"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/criteo/traffic-mirroring/mirror"
 	"github.com/criteo/traffic-mirroring/mirror/expr"
 	"github.com/criteo/traffic-mirroring/mirror/registry"
+	"github.com/gogo/protobuf/proto"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	log "github.com/sirupsen/logrus"
 )
 

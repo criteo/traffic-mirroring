@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rakyll/statik/fs"
 	"github.com/criteo/traffic-mirroring/mirror"
 	"github.com/criteo/traffic-mirroring/mirror/graph"
 	_ "github.com/criteo/traffic-mirroring/mirror/server/statik"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rakyll/statik/fs"
 	log "github.com/sirupsen/logrus"
 )
 

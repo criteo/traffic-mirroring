@@ -11,11 +11,11 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/criteo/traffic-mirroring/mirror"
+	"github.com/criteo/traffic-mirroring/mirror/registry"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
-	"github.com/criteo/traffic-mirroring/mirror"
-	"github.com/criteo/traffic-mirroring/mirror/registry"
 	log "github.com/sirupsen/logrus"
 )
 

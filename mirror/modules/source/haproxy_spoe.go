@@ -129,7 +129,7 @@ func (m *HAProxySPOE) start() error {
 	agent := spoe.NewWithConfig(m.handleMessage, spoe.Config{
 		ReadTimeout:  time.Second,
 		WriteTimeout: time.Second,
-		IdleTimeout: m.idleTimeout,
+		IdleTimeout:  m.idleTimeout,
 	})
 
 	var l net.Listener

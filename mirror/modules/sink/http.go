@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"github.com/criteo/traffic-mirroring/mirror"
+	"github.com/criteo/traffic-mirroring/mirror/expr"
 	"github.com/criteo/traffic-mirroring/mirror/registry"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/common/log"
-	"github.com/criteo/traffic-mirroring/mirror/expr"
 )
 
 const (

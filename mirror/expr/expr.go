@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/criteo/traffic-mirroring/mirror"
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/checker/decls"
-	"github.com/criteo/traffic-mirroring/mirror"
 )
 
 type Expr interface {
