@@ -128,6 +128,7 @@ or
 {
   "type": "sink.http",
   "config": {
+    "follow_redirects": true,
     "timeout": "1s",
     "target_url": "{req.meta.target.string}"
   }
@@ -136,11 +137,12 @@ or
 
 
 
-| Param        | Value                                                       |
-| ------------ | ----------------------------------------------------------- |
-| `target_url` | URL to send the requests to. The path in the URL is ignored |
-| `timeout`    | Requests timeout. Ex: `1s`, `200ms`, `1m30s`                |
-| `parallel`   | How many requests to send in parallel. Default: 10          |
+| Param              | Value                                                       |
+| ------------------ | ----------------------------------------------------------- |
+| `target_url`       | URL to send the requests to. The path in the URL is ignored |
+| `timeout`          | Requests timeout. Ex: `1s`, `200ms`, `1m30s`                |
+| `parallel`         | How many requests to send in parallel. Default: 10          |
+| `follow_redirects` | Follow HTTP redirections. Default: False                    |
 
 #### sink.file
 

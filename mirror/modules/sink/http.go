@@ -42,9 +42,10 @@ func init() {
 }
 
 type HTTPConfig struct {
-	TargetURL *expr.StringExpr `json:"target_url,omitempty"`
-	Timeout   string           `json:"timeout,omitempty"`
-	Parallel  int              `json:"parallel"`
+	FollowRedirects bool             `json:"follow_redirects,omitempty"`
+	TargetURL       *expr.StringExpr `json:"target_url,omitempty"`
+	Timeout         string           `json:"timeout,omitempty"`
+	Parallel        int              `json:"parallel"`
 }
 
 type HTTP struct {
@@ -77,17 +78,22 @@ func NewHTTP(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 		maxWorkers = c.Parallel
 	}
 
+	httpClient := &http.Client{
+		Timeout: timeout,
+	}
+
+	if !c.FollowRedirects {
+		httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		}
+	}
+
 	mod := &HTTP{
-		ctx:   ctx,
-		cfg:   c,
-		out:   make(chan mirror.Request),
-		tasks: make(chan mirror.Request),
-		client: &http.Client{
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-			Timeout: timeout,
-		},
+		ctx:        ctx,
+		cfg:        c,
+		out:        make(chan mirror.Request),
+		tasks:      make(chan mirror.Request),
+		client:     httpClient,
 		maxWorkers: maxWorkers,
 	}
 	return mod, nil
