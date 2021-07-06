@@ -83,6 +83,9 @@ func NewHTTP(ctx *mirror.ModuleContext, cfg []byte) (mirror.Module, error) {
 		out:   make(chan mirror.Request),
 		tasks: make(chan mirror.Request),
 		client: &http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
 			Timeout: timeout,
 		},
 		maxWorkers: maxWorkers,
