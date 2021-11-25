@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20201120081800-1786d5ef83d4 // indirect
 	github.com/antlr/antlr4 v0.0.0-20210114010855-d34d2e1c271a // indirect
 	github.com/criteo/haproxy-spoe-go v1.0.6
-	github.com/emicklei/dot v0.15.0
+	github.com/emicklei/dot v0.16.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.4.3
 	github.com/google/cel-go v0.6.0
