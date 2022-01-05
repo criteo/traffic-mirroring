@@ -34,7 +34,7 @@ jobs:
         fi
 
     - name: Build
-      run: go build -v -ldflags "-linkmode external -extldflags -static" .
+      run: go build -v -ldflags "-linkmode external -extldflags -static" -tags=netgo .
 
     - name: Test
       run: go test -v .
