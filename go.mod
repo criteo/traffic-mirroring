@@ -9,7 +9,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/google/cel-go v0.11.2
 	github.com/google/gopacket v1.1.19
-	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/client_golang v1.11.1
 	github.com/prometheus/common v0.26.0
 	github.com/rakyll/statik v0.1.7
 	github.com/sirupsen/logrus v1.9.0
