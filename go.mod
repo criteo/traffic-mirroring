@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/criteo/haproxy-spoe-go v1.0.8
-	github.com/emicklei/dot v1.6.4
+	github.com/emicklei/dot v1.7.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.4
 	github.com/google/cel-go v0.22.1
