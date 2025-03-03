@@ -7,7 +7,7 @@ require (
 	github.com/emicklei/dot v1.7.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.4
-	github.com/google/cel-go v0.22.1
+	github.com/google/cel-go v0.24.1
 	github.com/google/gopacket v1.1.19
 	github.com/prometheus/client_golang v1.11.1
 	github.com/prometheus/common v0.26.0
@@ -19,7 +19,7 @@ require (
 )
 
 require (
-	cel.dev/expr v0.18.0 // indirect
+	cel.dev/expr v0.19.1 // indirect
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20201120081800-1786d5ef83d4 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
