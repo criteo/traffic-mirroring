@@ -1,6 +1,7 @@
 module github.com/criteo/traffic-mirroring
 
 go 1.22
+toolchain go1.23.7
 
 require (
 	github.com/criteo/haproxy-spoe-go v1.0.8
@@ -34,8 +35,8 @@ require (
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
 	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc // indirect
-	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240826202546-f6391c0de4c7 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
