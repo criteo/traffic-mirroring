@@ -1,6 +1,6 @@
 module github.com/criteo/traffic-mirroring
 
-go 1.22
+go 1.23
 
 require (
 	github.com/criteo/haproxy-spoe-go v1.0.8
