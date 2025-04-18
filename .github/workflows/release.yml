@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up Go 1.20
-        uses: actions/setup-go@v2
+      - name: Set up Go 1.23
+        uses: actions/setup-go@v5
         with:
-          go-version: ^1.20
+          go-version: 1.23
 
       - name: Install libpcap0.8-dev
         run: sudo apt-get install libpcap0.8-dev
@@ -24,7 +24,7 @@ jobs:
         run: sudo apt-get install musl-tools musl-dev
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Get dependencies
         run: |
